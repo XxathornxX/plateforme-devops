@@ -1,0 +1,5 @@
+REPO : https://github.com/XxathornxX/plateforme-devops/blob/main/docs/ValidationTP1.md
+
+https://registry.terraform.io/providers/tehcyx/kind/latest/docs
+https://registry.terraform.io/providers/hashicorp/helm/latest/docs
+https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release
