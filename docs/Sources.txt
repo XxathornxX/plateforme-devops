@@ -3,3 +3,5 @@ REPO : https://github.com/XxathornxX/plateforme-devops/blob/main/docs/Validation
 https://registry.terraform.io/providers/tehcyx/kind/latest/docs
 https://registry.terraform.io/providers/hashicorp/helm/latest/docs
 https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release
+https://developer.hashicorp.com/terraform/language/modules
+https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/

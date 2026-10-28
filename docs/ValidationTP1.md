@@ -251,3 +251,143 @@ Le first test à failed, il indique que il ne peut pas com avec la ressource dem
 ```python
 argocd  argocd          1               2026-10-28 15:01:10.975599174 +0100 CET failed  argo-cd-10.10.3 v3.5.5     
 ```
+
+## 3. Ouvre l'interface d'ArgoCD
+
+#### le mot de passe du compte admin
+kubectl --context kind-plateforme -n argocd get secret argocd-initial-admin-secret \
+  -o jsonpath='{.data.password}' | base64 -d ; echo
+
+```python
+OBTENU
+```
+#### l'interface sur https://localhost:8443 (laisse cette commande tourner)
+kubectl --context kind-plateforme -n argocd port-forward svc/argocd-server 8443:443
+
+Connecte-toi avec admin. L'interface est vide : c'est normal, tu n'as encore rien confié à ArgoCD. 
+Tu y reviendras au TP2.
+
+```python
+OBTENU
+```
+
+## 4. Des modules
+
+Ton main.tf mélange deux sujets. Sépare-les.
+
+### Crée infra/modules/cluster/ : la ressource kind_cluster, une variable nom, et les quatre output dont le provider Helm a besoin.
+
+```python
+FAIT
+```
+
+### Crée infra/modules/argocd/ : la ressource helm_release, une variable version_chart.
+
+```python
+FAIT
+```
+
+### Dans infra/main.tf, il ne reste que deux blocs module.
+
+```python
+OUI
+```
+
+### Le provider Helm lit maintenant les sorties du module : module.cluster.endpoint, etc.
+
+```python
+OUI
+```
+
+### terraform init (nouveaux modules), puis terraform plan.
+
+❯ terraform init
+
+```python
+Initializing the backend...
+
+Initializing modules...
+
+Initializing provider plugins...
+- Reusing version 3.3.0 of hashicorp/helm from the dependency lock file
+- Reusing version 0.13.0 of tehcyx/kind from the dependency lock file
+- Using previously-installed hashicorp/helm v3.3.0
+- Using previously-installed tehcyx/kind v0.13.0
+
+Terraform has been successfully initialized!
+
+You may now begin working with Terraform. Try running "terraform plan" to see
+any changes that are required for your infrastructure. All Terraform commands
+should now work.
+
+If you ever set or change modules or backend configuration for Terraform,
+rerun this command to reinitialize your working directory. If you forget, other
+commands will detect it and remind you to do so if necessary.
+```
+
+❯ terraform plan
+
+```python
+module.cluster.kind_cluster.plateforme: Refreshing state... [id=plateforme-]
+module.argocd.helm_release.argocd: Refreshing state... [id=argocd]
+
+Terraform will perform the following actions:
+
+  # helm_release.argocd has moved to module.argocd.helm_release.argocd
+    resource "helm_release" "argocd" {
+        id                         = "argocd"
+        name                       = "argocd"
+        # (30 unchanged attributes hidden)
+    }
+
+  # kind_cluster.plateforme has moved to module.cluster.kind_cluster.plateforme
+    resource "kind_cluster" "plateforme" {
+        id                     = "plateforme-"
+        name                   = "plateforme"
+        # (9 unchanged attributes hidden)
+    }
+
+Plan: 0 to add, 0 to change, 0 to destroy.
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly these
+actions if you run "terraform apply" now.
+```
+
+❯ terraform apply
+
+```python
+module.cluster.kind_cluster.plateforme: Refreshing state... [id=plateforme-]
+module.argocd.helm_release.argocd: Refreshing state... [id=argocd]
+
+Terraform will perform the following actions:
+
+  # helm_release.argocd has moved to module.argocd.helm_release.argocd
+    resource "helm_release" "argocd" {
+        id                         = "argocd"
+        name                       = "argocd"
+        # (30 unchanged attributes hidden)
+    }
+
+  # kind_cluster.plateforme has moved to module.cluster.kind_cluster.plateforme
+    resource "kind_cluster" "plateforme" {
+        id                     = "plateforme-"
+        name                   = "plateforme"
+        # (9 unchanged attributes hidden)
+    }
+
+Plan: 0 to add, 0 to change, 0 to destroy.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+
+Apply complete! Resources: 0 added, 0 changed, 0 destroyed.
+```
+
+Regarde bien ce plan : Terraform propose de détruire puis recréer tes ressources, parce que leur adresse a changé (kind_cluster.this est devenu module.cluster.kind_cluster.this). Sur une vraie infrastructure, ce serait une panne : on l'éviterait avec un bloc moved. Ici, c'est sans conséquence : applique.
+
