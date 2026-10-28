@@ -55,11 +55,21 @@ Image: "api:initial" with ID "sha256:fd3691d95043b2461fef556490f5f4617693aaca6c9
 ```
 
 ## 2. Les manifests de base
+
 Dans deploy/base/ :
 
-deployment.yaml : un Deployment api, un replica, image api, port 8080 nommé http, une readinessProbe sur /healthz, des resources (demande 50m de CPU et 64Mi de mémoire, limite 128Mi de mémoire). Label des pods : app: api.
-service.yaml : un Service api, port 80 vers le port http des pods. Donne-lui aussi le label app: api (il servira pour la supervision).
-kustomization.yaml : il liste les deux fichiers.
+### deployment.yaml : un Deployment api, un replica, image api, port 8080 nommé http, une readinessProbe sur /healthz, des resources (demande 50m de CPU et 64Mi de mémoire, limite 128Mi de mémoire). Label des pods : app: api.
+
+plateforme-devops/deploy/base/deployment.yaml
+
+### service.yaml : un Service api, port 80 vers le port http des pods. Donne-lui aussi le label app: api (il servira pour la supervision).
+
+plateforme-devops/deploy/base/service.yaml
+
+### kustomization.yaml : il liste les deux fichiers.
+
+plateforme-devops/deploy/base/kustomization.yaml
+
 N'écris aucun namespace dans ces fichiers : ce sont les overlays qui le fixent.
 
 3. Les deux environnements
