@@ -1,9 +1,9 @@
 module "cluster" {
   source = "./modules/cluster"
-  nom    = "plateforme"
+  nom    = var.nom_cluster
 }
 
 module "argocd" {
   source        = "./modules/argocd"
-  version_chart = "10.10.3"
+  version_chart = var.version_argocd
 }
