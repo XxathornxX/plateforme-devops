@@ -8,3 +8,6 @@ https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/mo
 https://www.stephane-robert.info/docs/conteneurs/orchestrateurs/kubernetes/ecrire-manifests/
 https://institute.sfeir.com/en/kubernetes-training/manifests-yaml-kubernetes-reference-quick/
 https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
+https://octopus.com/use-case/argo-cd-in-octopus?qgad=784700398776&qgterm=argocd&utm_source=google&utm_medium=cpc&utm_campaign={campaignname}&utm_term=argocd&campaign_id=23266264976&ad_group_id=192432145887&ad_id=784700398776&match_type=p&target=kwd-892875024668&gad_source=1&gad_campaignid=23266264976&gclid=CjwKCAjwuobXBhBXEiwAYUaIlcSxg4hFDebuB-y9FmIqJeoOUN22qMVE25gQNI2yfPpQFMrbJc4dOBoCB98QAvD_BwE
+https://www.reddit.com/r/kubernetes/comments/qqwp67/how_do_you_use_argocd_for_rapidly_changing/?tl=fr
+https://www.stephane-robert.info/docs/pipeline-cicd/argocd/multi-env/

@@ -149,24 +149,139 @@ spec:
 Commite et pousse : ArgoCD ne voit que ce qui est sur le dépôt distant.
 
 ## 4. Confie les environnements à ArgoCD
+
 Dans deploy/argocd/, écris api-dev.yaml et api-prod.yaml : deux objets Application nommés api-dev et api-prod, qui pointent sur ton dépôt (URL https), branche main, chemins deploy/overlays/dev et deploy/overlays/prod, avec synchronisation automatique, prune, selfHeal et l'option CreateNamespace=true.
 
 Commite et pousse. Rien ne se passe encore : personne n'a dit à ArgoCD de lire ce dossier.
 
-5. L'application racine, par Terraform
+## 5. L'application racine, par Terraform
+
 Dans le module argocd, ajoute une seconde helm_release (chart argocd-apps, version 2.0.6, même dépôt Helm) qui déclare une application racine surveillant le dossier deploy/argocd de ton dépôt, en synchronisation automatique. L'URL du dépôt est une nouvelle variable depot, à ajouter à plateforme.tfvars.
 
-terraform apply -var-file=plateforme.tfvars
+plateforme-devops/infra/modules/argocd/main.tf
+
+❯ terraform apply -var-file=plateforme.tfvars
+
+```python
+module.cluster.kind_cluster.plateforme: Refreshing state... [id=plateforme-]
+module.argocd.helm_release.argocd: Refreshing state... [id=argocd]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are
+indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # module.argocd.helm_release.argocd_apps will be created
+  + resource "helm_release" "argocd_apps" {
+      + atomic                     = false
+      + chart                      = "argocd-apps"
+      + cleanup_on_fail            = false
+      + create_namespace           = false
+      + dependency_update          = false
+      + disable_crd_hooks          = false
+      + disable_openapi_validation = false
+      + disable_webhooks           = false
+      + force_update               = false
+      + id                         = (known after apply)
+      + lint                       = false
+      + max_history                = 0
+      + metadata                   = (known after apply)
+      + name                       = "argocd-apps"
+      + namespace                  = "argocd"
+      + pass_credentials           = false
+      + recreate_pods              = false
+      + render_subchart_notes      = true
+      + replace                    = false
+      + repository                 = "https://argoproj.github.io/argo-helm"
+      + reset_values               = false
+      + reuse_values               = false
+      + set_wo                     = (write-only attribute)
+      + skip_crds                  = false
+      + status                     = "deployed"
+      + take_ownership             = false
+      + timeout                    = 300
+      + upgrade_install            = false
+      + values                     = [
+          + <<-EOT
+                "applications":
+                  "racine":
+                    "destination":
+                      "namespace": "argocd"
+                      "server": "https://kubernetes.default.svc"
+                    "namespace": "argocd"
+                    "project": "default"
+                    "source":
+                      "path": "deploy/argocd"
+                      "repoURL": "https://github.com/XxathornxX/plateforme-devops.git"
+                      "targetRevision": "main"
+                    "syncPolicy":
+                      "automated": {}
+            EOT,
+        ]
+      + verify                     = false
+      + version                    = "2.0.6"
+      + wait                       = true
+      + wait_for_jobs              = false
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+module.argocd.helm_release.argocd_apps: Creating...
+module.argocd.helm_release.argocd_apps: Creation complete after 1s [id=argocd-apps]
+
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+```
+
 kubectl --context kind-plateforme -n argocd get applications --watch
+
+```python
+NAME       SYNC STATUS   HEALTH STATUS
+api-dev    Synced        Healthy
+api-prod   Synced        Healthy
+racine     Synced        Healthy
+```
+
 En une à deux minutes, racine, api-dev et api-prod doivent être Synced et Healthy. Regarde aussi l'interface d'ArgoCD (commandes au TP1) : l'arbre de chaque application y est beaucoup plus lisible.
 
-kubectl --context kind-plateforme -n prod get pods            # deux pods
+```python
+OUI
+```
+
+❯ kubectl --context kind-plateforme -n prod get pods # deux pods
+
+```python
+NAME                   READY   STATUS    RESTARTS   AGE
+api-5d79bf68c8-fqmf4   1/1     Running   0          6m41s
+api-5d79bf68c8-ftrtp   1/1     Running   0          6m41s
+```
+
 kubectl --context kind-plateforme -n dev port-forward svc/api 8080:80
-curl localhost:8080/                                          # dans un autre terminal
-6. Vis le GitOps
+
+```python
+Forwarding from 127.0.0.1:8080 -> 8080
+Forwarding from [::1]:8080 -> 8080
+```
+
+curl localhost:8080/   # dans un autre terminal
+
+```python
+{"jeton_present":false,"service":"api","version":"dev"}
+
+```
+
+## 6. Vis le GitOps
 Un changement par git : passe prod à trois replicas en modifiant l'overlay, commite, pousse, et observe sans rien faire d'autre. ArgoCD interroge le dépôt toutes les trois minutes environ : sois patient, ou clique sur Refresh dans l'interface.
 Un changement à la main : kubectl -n prod scale deployment api --replicas=1. Regarde ce qu'il devient en quelques secondes. Pourquoi ?
 Reviens à deux replicas, par git.
+
+
 Pièges connus
 ErrImageNeverPull ou ImagePullBackOff : l'image api:initial n'est pas dans le cluster. Refais le kind load. Tu devras le refaire après chaque terraform destroy : ce défaut disparaît au TP3, avec la registry.
 L'application reste Unknown : ArgoCD n'arrive pas à lire ton dépôt. Il doit être public, et l'URL doit être en https://, pas en git@.
