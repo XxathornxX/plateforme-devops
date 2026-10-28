@@ -72,16 +72,83 @@ plateforme-devops/deploy/base/kustomization.yaml
 
 N'écris aucun namespace dans ces fichiers : ce sont les overlays qui le fixent.
 
-3. Les deux environnements
-deploy/overlays/dev/kustomization.yaml : namespace dev, la base, l'image api:initial.
-deploy/overlays/prod/kustomization.yaml : pareil avec le namespace prod, et deux replicas.
+## 3. Les deux environnements
+
+### deploy/overlays/dev/kustomization.yaml : namespace dev, la base, l'image api:initial.
+
+### deploy/overlays/prod/kustomization.yaml : pareil avec le namespace prod, et deux replicas.
+
 Vérifie avant de commiter, sans rien appliquer :
 
-kubectl kustomize deploy/overlays/dev
-kubectl kustomize deploy/overlays/prod | grep -E "namespace:|replicas:|image:"
+❯ kubectl kustomize deploy/overlays/dev
+
+```python
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: api
+  name: api
+  namespace: dev
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: http
+  selector:
+    app: api
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: api
+  name: api
+  namespace: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+      - image: api:initial
+        name: api
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: http
+            scheme: HTTP
+        resources:
+          limits:
+            memory: 128Mi
+          requests:
+            cpu: 50m
+            memory: 64Mi
+```
+
+
+❯ kubectl kustomize deploy/overlays/prod | grep -E "namespace:|replicas:|image:"
+
+```python
+  namespace: prod
+  namespace: prod
+  replicas: 2
+      - image: api:initial
+```
+
 Commite et pousse : ArgoCD ne voit que ce qui est sur le dépôt distant.
 
-4. Confie les environnements à ArgoCD
+## 4. Confie les environnements à ArgoCD
 Dans deploy/argocd/, écris api-dev.yaml et api-prod.yaml : deux objets Application nommés api-dev et api-prod, qui pointent sur ton dépôt (URL https), branche main, chemins deploy/overlays/dev et deploy/overlays/prod, avec synchronisation automatique, prune, selfHeal et l'option CreateNamespace=true.
 
 Commite et pousse. Rien ne se passe encore : personne n'a dit à ArgoCD de lire ce dossier.

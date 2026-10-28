@@ -7,3 +7,4 @@ https://developer.hashicorp.com/terraform/language/modules
 https://www.stephane-robert.info/docs/infra-as-code/provisionnement/terraform/modules/
 https://www.stephane-robert.info/docs/conteneurs/orchestrateurs/kubernetes/ecrire-manifests/
 https://institute.sfeir.com/en/kubernetes-training/manifests-yaml-kubernetes-reference-quick/
+https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
